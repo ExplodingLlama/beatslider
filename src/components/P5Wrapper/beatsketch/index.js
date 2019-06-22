@@ -9,13 +9,14 @@ export default function(s) {
   s.state = {
     width: window.innerWidth,
     height: window.innerHeight / 2,
-    clipLength: 10,
-    currentTime: 0,
-    isPlaying: false,
-    dots: []
+    clipLength: 2000, //in milliseconds
+    currentTime: 0, //always between 0 and 1
+    dots: [],
+    timeAtLastDraw: 0
   };
 
   s.LINE_WIDTH = 4;
+  s.BAR_HEIGHT = 100;
   s.LINE_START = (1 / 5) * s.state.width;
   s.LINE_END = (4 / 5) * s.state.width;
   s.LINE_Y = (1 / 3) * s.state.height;
@@ -68,18 +69,26 @@ export default function(s) {
         10
       );
     });
-    if (s.state.isPlaying) {
+    //draw the bar
+    s.stroke(255);
+    s.fill(255);
+    let barX = s.state.currentTime * (s.LINE_END - s.LINE_START) + s.LINE_START;
+    s.rect(
+      barX,
+      s.LINE_Y - s.BAR_HEIGHT / 2 + s.LINE_WIDTH / 2,
+      2,
+      s.BAR_HEIGHT
+    );
+    //console.log(s.props);
+    if (s.props.isPlaying) {
+      let deltaT = s.millis() - s.state.timeAtLastDraw;
+      s.state.currentTime =
+        (deltaT + s.state.currentTime * s.state.clipLength) /
+        s.state.clipLength;
     }
-    // if (s.frameCount % 60 === 1) {
-    //   s.onSetAppState({ frameRate: s.frameRate().toFixed(1) });
-    // }
-    //
-    // s.background(127, 0, 50);
-    // const weight = s.map(s.props.slider, 5, 290, 0, 10);
-    // s.strokeWeight(weight);
-    // s.stroke(127, 255, 205);
-    // const alpha = s.map(s.props.slider, 5, 290, 255, 0);
-    // s.fill(127, 255, 205, alpha);
-    // s.ellipse(s.width / 2, s.height / 2, s.props.slider);
+    if (s.state.currentTime > 1) {
+      s.state.currentTime = 0 + s.state.currentTime - 1;
+    }
+    s.state.timeAtLastDraw = s.millis();
   };
 }
