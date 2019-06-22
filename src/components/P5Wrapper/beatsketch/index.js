@@ -1,6 +1,9 @@
+import Tone from "tone";
+
 export default function(s) {
   s.props = {};
   s.onSetAppState = () => {};
+  s.synth = new Tone.Synth().toMaster();
 
   s.setup = function() {
     s.createCanvas(window.innerWidth, window.innerHeight / 2);
@@ -9,7 +12,7 @@ export default function(s) {
   s.state = {
     width: window.innerWidth,
     height: window.innerHeight / 2,
-    clipLength: 2000, //in milliseconds
+    clipLength: 500, //in milliseconds
     currentTime: 0, //always between 0 and 1
     dots: [],
     timeAtLastDraw: 0
@@ -33,6 +36,16 @@ export default function(s) {
       return lineX;
     }
     return -1;
+  };
+
+  s.isThereANote = (oldT, newT) => {
+    var isThere = false;
+    s.state.dots.forEach(dot => {
+      if (dot >= oldT && dot < newT) {
+        isThere = true;
+      }
+    });
+    return isThere;
   };
 
   s.handleDotCreationOrDeletion = lineX => {
@@ -79,7 +92,7 @@ export default function(s) {
       2,
       s.BAR_HEIGHT
     );
-    //console.log(s.props);
+    var oldCurrentTime = s.state.currentTime;
     if (s.props.isPlaying) {
       let deltaT = s.millis() - s.state.timeAtLastDraw;
       s.state.currentTime =
@@ -88,6 +101,9 @@ export default function(s) {
     }
     if (s.state.currentTime > 1) {
       s.state.currentTime = 0 + s.state.currentTime - 1;
+    }
+    if (s.isThereANote(oldCurrentTime, s.state.currentTime)) {
+      s.synth.triggerAttackRelease("C4", 0.1);
     }
     s.state.timeAtLastDraw = s.millis();
   };
