@@ -12,9 +12,10 @@ export default function(s) {
   s.state = {
     width: window.innerWidth,
     height: window.innerHeight / 2,
-    clipLength: 500, //in milliseconds
+    clipLength: 2000, //in milliseconds
     currentTime: 0, //always between 0 and 1
-    dots: [],
+    dots: [], //contains number from 0 to 1
+    notes: [], //contains an object with value of the corresponding dot, and the handle of the tone instrument object
     timeAtLastDraw: 0
   };
 
@@ -38,6 +39,13 @@ export default function(s) {
     return -1;
   };
 
+  s.checkForReset = () => {
+    if (s.props.isReseting) {
+      s.state.dots = [];
+      s.resetDone();
+    }
+  };
+
   s.isThereANote = (oldT, newT) => {
     var isThere = false;
     s.state.dots.forEach(dot => {
@@ -47,6 +55,15 @@ export default function(s) {
     });
     return isThere;
   };
+
+  // s.checkNotes = () => {
+  //   s.state.dots.forEach(dot => {
+  //     let found = s.state.notes.find(element => element.dot === dot);
+  //     if (!found) {
+  //       s.state.notes.push({ dot: dot });
+  //     }
+  //   });
+  // };
 
   s.handleDotCreationOrDeletion = lineX => {
     let pos = -1;
@@ -61,7 +78,6 @@ export default function(s) {
     let lineX = s.getLineXCoordinates();
     if (lineX >= 0 && lineX <= 1) {
       s.handleDotCreationOrDeletion(lineX);
-      console.log("All the dots", s.state.dots);
     }
     return false;
   };
@@ -106,5 +122,7 @@ export default function(s) {
       s.synth.triggerAttackRelease("C4", 0.1);
     }
     s.state.timeAtLastDraw = s.millis();
+    // s.checkNotes();
+    s.checkForReset();
   };
 }

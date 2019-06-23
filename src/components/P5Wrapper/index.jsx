@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Tone from "tone";
 
 import beatsketch from "./beatsketch";
 
@@ -28,6 +29,7 @@ export default class P5Wrapper extends Component {
   }
 
   playPressed = e => {
+    Tone.context.resume();
     if (!this.state.isPlaying)
       this.setState({ isPlaying: true }, this.updateCanvasProps);
     else this.setState({ isPlaying: false }, this.updateCanvasProps);
